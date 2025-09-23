@@ -32,6 +32,6 @@ jobs:
         run: |
           rsync -azP \
             --exclude-from='.gitignore' \
-            -e "ssh -o IdentitiesOnly=yes" \
+            -e "ssh -o IdentitiesOnly=yes -i ~/.ssh/controller.pem" \
             ./ ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}:/home/ubuntu/ansible/
 
