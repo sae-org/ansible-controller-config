@@ -1,0 +1,83 @@
+--- 
+- name: Prep Ubuntu ASG instances && Deploy NGINX container from ECR
+  hosts: all
+  become: yes 
+  gather_facts: yes 
+  vars: 
+    aws_region: "{{ lookup('env','AWS_REGION') | default('us-east-1') }}"
+    aws_account_id: "{{ lookup('env','AWS_ACCOUNT_ID') }}"
+    ecr_repo: "{{ lookup('env','ECR_REPO') }}"             
+    image_tag: "{{ lookup('env','IMAGE_TAG') | default('latest') }}"
+    container_name: "{{ lookup('env','CONTAINER_NAME') | default('myapp') }}"
+    host_port: "{{ lookup('env','HOST_PORT') | default(80) }}"
+    container_port: "{{ lookup('env','CONTAINER_PORT') | default(80) }}"
+    registry: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
+    image_ref: "{{ registry }}/{{ ecr_repo }}:{{ image_tag }}"
+
+  tasks:
+    - name: Ensure base packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - docker.io
+          - unzip
+          - curl 
+          - ca-certificates
+        state: present
+        update_cache: yes
+
+    - name: Install Docker Python SDK from apt (Ubuntu)
+      apt:
+        name: python3-docker
+        state: present
+        update_cache: yes
+
+    - name: Enable & start Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Download AWS CLI v2 bundle
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+        mode: '0644'
+
+    - name: Unpack AWS CLI v2 bundle
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: true
+
+    - name: Install / update AWS CLI v2
+      command: /tmp/aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+      args:
+        creates: /usr/local/bin/aws
+
+    - name: Get ECR login password
+      command: "aws ecr get-login-password --region {{ aws_region }}"
+      register: ecr_pwd
+      changed_when: false
+
+    - name: Docker login to ECR
+      community.docker.docker_login:
+        registry_url: "{{ registry }}"
+        username: AWS
+        password: "{{ ecr_pwd.stdout }}"
+
+    - name: Pull image
+      community.docker.docker_image:
+        name: "{{ image_ref }}"
+        source: pull
+
+    - name: Run/replace container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ image_ref }}"
+        state: started
+        recreate: true
+        restart_policy: always
+        published_ports:
+          - "{{ host_port }}:{{ container_port }}"   

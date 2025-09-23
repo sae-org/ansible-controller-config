@@ -1,0 +1,34 @@
+name: Rsync Ansible files to controller 
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code 
+        uses: actions/checkout@v4
+
+      - name: Start ssh-agent 
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}
+
+      - name: Trust server host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.ANSIBLE_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Ensure target dir exists on server
+        run: |
+          ssh -o IdentitiesOnly=yes ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }} \
+            "mkdir -p /home/ubuntu/ansible"
+
+      - name: Rsync only changed files to server
+        run: |
+          rsync -azP \
+            --exclude-from='.gitignore' \
+            -e "ssh -o IdentitiesOnly=yes" \
+            ./ ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}:/home/ubuntu/ansible/

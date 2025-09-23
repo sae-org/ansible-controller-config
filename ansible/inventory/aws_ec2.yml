@@ -1,0 +1,23 @@
+---
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - "{{ lookup('env','AWS_REGION') | default('us-east-1') }}"  
+
+filters:
+  "tag:aws:autoscaling:groupName": "my-app-asg"
+  instance-state-name: "running"
+
+hostnames:
+  - private-ip-address
+
+compose:
+  ansible_host: private_ip_address
+
+keyed_groups:
+  - key: tags['aws:autoscaling:groupName']
+    prefix: asg
+    separator: '_'
+
+strict: False
+cache: False
