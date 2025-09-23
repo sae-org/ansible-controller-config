@@ -24,9 +24,9 @@ jobs:
 
       - name: Ensure target dir exists on server
         run: |
-          ssh -o IdentitiesOnly=yes ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }} \
+          ssh -o IdentitiesOnly=yes -i ~/.ssh/controller.pem \
+            ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }} \
             "mkdir -p /home/ubuntu/ansible"
-
 
       - name: Test SSH (should print OK)
         run: |
