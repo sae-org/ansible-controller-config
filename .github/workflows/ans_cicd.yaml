@@ -5,6 +5,7 @@ on:
     types: [ deploy-from-repo-a ]   # this will run if repo A pushes a new docker image
   push:
     branches: [ main ]              # this will run if changes within this repo are made and pushed to git 
+    paths: [ 'ansible/**' ]
   workflow_dispatch:  
 
 jobs:
