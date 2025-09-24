@@ -63,12 +63,13 @@ jobs:
               export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}'
               export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}'
 
-              cd "$REPO_DIR/ansible"
+              cd \"\$REPO_DIR/ansible\"
               ansible-playbook -i inventory/aws_ec2.yml playbooks/deploy.yml \
                 -e aws_account_id='${{ secrets.AWS_ACCOUNT_ID }}' \
                 -e ecr_repo='my-dev-ecr-repo' \
                 -e image_tag='${IMAGE_TAG}' \
                 -e ansible_user=ubuntu \
                 -e ansible_ssh_private_key_file=/home/ubuntu/.ssh/managed_hosts.pem \
-                -e "ansible_ssh_common_args=-o IdentitiesOnly=yes"
+                -e 'ansible_ssh_common_args=-o IdentitiesOnly=yes'
+            "
             
