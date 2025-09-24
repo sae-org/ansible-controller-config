@@ -1,76 +1,36 @@
-name: Deploy with Ansible (Repo B)
+name: Rsync Ansible files to controller
 
 on:
-  repository_dispatch:
-    types: [ deploy-from-repo-a ]   # this will run if repo A pushes a new docker image
   push:
-    branches: [ main ]              # this will run if changes within this repo are made and pushed to git 
-    paths: [ 'ansible/**' ]
-  workflow_dispatch:  
+    branches: [ "main" ]
 
 jobs:
-  deploy:
+  sync:
     runs-on: ubuntu-latest
-    env:
-      AWS_REGION: us-east-1
-
     steps:
-      # If Repo A pinged, use its SHA; else use 'latest'
-      - name: Choose image tag
-        run: |
-          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
-            echo "IMAGE_TAG=${{ github.event.client_payload.image_tag }}" >> $GITHUB_ENV
-            echo "ECR_REPO=${{ github.event.client_payload.ecr_repo }}" >> $GITHUB_ENV
-          else
-            echo "IMAGE_TAG=latest" >> $GITHUB_ENV
-            echo "ECR_REPO=my-dev-ecr-repo" >> $GITHUB_ENV
-          fi
+      - name: Check out code
+        uses: actions/checkout@v4
 
-      - name: Write controller SSH key & trust host
+      - name: Add controller SSH private key
         run: |
           mkdir -p ~/.ssh
           printf '%s' "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/controller.pem
           chmod 600 ~/.ssh/controller.pem
+
+      - name: Trust server host key
+        run: |
+          mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.ANSIBLE_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Pull Repo B (public) and run Ansible Playbook
-        env:
-          IMAGE_TAG: ${{ github.sha }}   
+      - name: Ensure target dir exists on server
         run: |
           ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i ~/.ssh/controller.pem \
-            "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" "
-              set -euo pipefail
-              cd /home/ubuntu
+            "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" \
+            "mkdir -p /home/ubuntu/ansible"
 
-              REPO_DIR='projects'
-              REPO_URL='https://github.com/sae-org/ansible-controller-config.git'
-
-              # Clone if missing, else force-sync to exactly origin/maincd 
-              if [ -d \"\$REPO_DIR/.git\" ]; then
-                git -C \"\$REPO_DIR\" fetch --prune origin main
-                git -C \"\$REPO_DIR\" reset --hard origin/main
-                git -C \"\$REPO_DIR\" clean -fdx
-              else
-                rm -rf \"\$REPO_DIR\"
-                git clone --depth 1 \"\$REPO_URL\" \"\$REPO_DIR\"
-              fi
-
-              mkdir -p ~/.ssh 
-              chmod 700 ~/.ssh
-              printf '%s' '${{ secrets.MANAGED_HOSTS_SSH_KEY }}' > ~/.ssh/managed_hosts.pem 
-              chmod 600 ~/.ssh/managed_hosts.pem
-
-              export AWS_REGION='us-east-1' AWS_DEFAULT_REGION='us-east-1'
-              export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}'
-              export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}'
-
-              cd \"\$REPO_DIR/ansible\"
-              ansible-playbook -i inventory/aws_ec2.yml playbooks/deploy.yml \
-                -e aws_account_id='${{ secrets.AWS_ACCOUNT_ID }}' \
-                -e ecr_repo='my-dev-ecr-repo' \
-                -e image_tag='${IMAGE_TAG}' \
-                -e ansible_user=ubuntu \
-                -e ansible_ssh_private_key_file=/home/ubuntu/.ssh/managed_hosts.pem \
-                -e 'ansible_ssh_common_args=-o IdentitiesOnly=yes'
-            "
-            
+      - name: Rsync only changed files to server
+        run: |
+          rsync -azP \
+            --exclude-from='.gitignore' \
+            -e "ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i ~/.ssh/controller.pem" \
+            ansible/ "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}:/home/ubuntu/ansible/"

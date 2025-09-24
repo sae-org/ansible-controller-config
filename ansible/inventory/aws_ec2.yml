@@ -5,8 +5,8 @@ regions:
   - us-east-1  
 
 filters:
-  "tag:aws:autoscaling:groupName": "my-app-asg"
-  instance-state-name: "running"
+  "tag:aws:autoscaling:groupName": ["my-app-asg"]
+  instance-state-name: ["running"]
 
 hostnames:
   - private-ip-address
