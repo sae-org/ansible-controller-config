@@ -55,6 +55,7 @@ jobs:
               fi
 
               mkdir -p ~/.ssh 
+              chmod 700 ~/.ssh
               printf '%s' '${{ secrets.MANAGED_HOSTS_SSH_KEY }}' > ~/.ssh/managed_hosts.pem 
               chmod 600 ~/.ssh/managed_hosts.pem
 
@@ -69,5 +70,5 @@ jobs:
                 -e image_tag='${IMAGE_TAG}' \
                 -e ansible_user=ubuntu \
                 -e ansible_ssh_private_key_file=/home/ubuntu/.ssh/managed_hosts.pem \
-                -e 'ansible_ssh_common_args=-o IdentitiesOnly=yes'
+                -e "ansible_ssh_common_args=-o IdentitiesOnly=yes"
             
