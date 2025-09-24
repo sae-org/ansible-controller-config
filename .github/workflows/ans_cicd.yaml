@@ -1,4 +1,4 @@
-name: Rsync Ansible files to controller 
+name: Rsync Ansible files 
 
 on:
   push:
