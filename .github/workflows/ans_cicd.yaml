@@ -26,12 +26,14 @@ jobs:
         run: |
           ssh -o IdentitiesOnly=yes -i ~/.ssh/controller.pem \
             ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }} \
-            "mkdir -p /home/ubuntu/ansible"
+            "mkdir -p /home/ubuntu/projects/ansible"
 
       - name: Rsync only changed files to server
         run: |
           rsync -azP \
             --exclude-from='.gitignore' \
             -e "ssh -o IdentitiesOnly=yes -i ~/.ssh/controller.pem" \
-            ansible/ ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}:/home/ubuntu/ansible
+            ansible/ ${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}:/home/ubuntu/projects/ansible
 
+
+            
