@@ -44,7 +44,7 @@ jobs:
               REPO_DIR='projects'
               REPO_URL='https://github.com/sae-org/ansible-controller-config.git'
 
-              # Clone if missing, else force-sync to exactly origin/main
+              # Clone if missing, else force-sync to exactly origin/maincd 
               if [ -d \"\$REPO_DIR/.git\" ]; then
                 git -C \"\$REPO_DIR\" fetch --prune origin main
                 git -C \"\$REPO_DIR\" reset --hard origin/main
