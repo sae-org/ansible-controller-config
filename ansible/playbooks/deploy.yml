@@ -3,16 +3,8 @@
   hosts: all
   become: yes 
   gather_facts: yes 
-  vars: 
-    aws_region: "{{ lookup('env','AWS_REGION') | default('us-east-1') }}"
-    aws_account_id: "{{ lookup('env','AWS_ACCOUNT_ID') }}"
-    ecr_repo: "{{ lookup('env','ECR_REPO') }}"             
-    image_tag: "{{ lookup('env','IMAGE_TAG') | default('latest') }}"
-    container_name: "{{ lookup('env','CONTAINER_NAME') | default('myapp') }}"
-    host_port: "{{ lookup('env','HOST_PORT') | default(80) }}"
-    container_port: "{{ lookup('env','CONTAINER_PORT') | default(80) }}"
-    registry: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
-    image_ref: "{{ registry }}/{{ ecr_repo }}:{{ image_tag }}"
+  vars_files:
+    - group_vars/all/vault.yml
 
   tasks:
     - name: Ensure base packages
