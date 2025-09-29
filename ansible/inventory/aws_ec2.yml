@@ -5,7 +5,7 @@ regions:
   - us-east-1  
 
 filters:
-  "tag:aws:autoscaling:groupName": ["my-app-asg"]
+  "tag:aws:autoscaling:groupName": ["my-website-asg"]
   instance-state-name: ["running"]
 
 hostnames:
