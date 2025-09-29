@@ -37,6 +37,50 @@ jobs:
             echo '${{ secrets.ASG_SSH_KEY }}' > ~/.ssh/asg.pem 
             chmod 600 ~/.ssh/asg.pem
           "
+    
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Fetch secrets from aws secrets 
+        uses: abhilash1in/aws-secrets-manager-action@v2.1.0
+        with: 
+          secrets: |
+            ansible/vault_file_secrets
+          parse-json: true
+
+      - name: Create a vault file and add secrets from aws and encrypt file 
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: us-east-1
+          ECR_REPO: my-dev-ecr-repo-1
+          IMAGE_TAG: dev
+          ANSIBLE_VAULT_FILE_SECRETS: ${{ env.ANSIBLE_VAULT_FILE_SECRETS }}
+        run: |
+          ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i ~/.ssh/controller.pem \
+          "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" "
+            cd ansible
+            mkdir -p group_vars/all 
+
+            REGISTRY=\"${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com\"
+            IMAGE_REF=\"\${REGISTRY}/${ECR_REPO}:${IMAGE_TAG}\"
+
+            {
+              echo \"aws_account_id: ${AWS_ACCOUNT_ID}\"
+              echo \"aws_region: ${AWS_REGION}\"
+              echo \"ecr_repo: ${ECR_REPO}\"
+              echo \"image_tag: ${IMAGE_TAG}\"
+              echo \"registry: \${REGISTRY}\"
+              echo \"image_ref: \${IMAGE_REF}\"
+              echo \"${ANSIBLE_VAULT_FILE_SECRETS}\"
+            } > ./vault.yml
+
+            cd group_vars/all
+            ansible-vault encrypt vault.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
+          "
 
       - name: Rsync only changed files to server
         run: |
