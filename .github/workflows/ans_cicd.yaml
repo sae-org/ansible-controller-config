@@ -38,7 +38,7 @@ jobs:
             chmod 600 ~/.ssh/asg.pem
           "
 
-      - name: Create a vault file and add secrets from aws and encrypt file (server pulls secrets from secret manager)
+      - name: Change perms of vault pass file to make it +x, change ownership; Create a vault file and add secrets from aws and encrypt file (server pulls secrets from secret manager)
         env:
           SECRET_ID: ansible/vault_file_secrets
           AWS_REGION: us-east-1
@@ -47,6 +47,9 @@ jobs:
           "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" \
           "SECRET_ID='${SECRET_ID}' AWS_REGION='${AWS_REGION}' bash -lc '
             cd ansible
+            chmod 700 secrets_script.sh
+            chown ubuntu:ubuntu secrets_script.sh
+            
             mkdir -p group_vars/all 
 
             aws secretsmanager get-secret-value \
