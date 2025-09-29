@@ -75,11 +75,12 @@ jobs:
               echo \"image_tag: ${IMAGE_TAG}\"
               echo \"registry: \${REGISTRY}\"
               echo \"image_ref: \${IMAGE_REF}\"
-              echo \"${ANSIBLE_VAULT_FILE_SECRETS}\"
-            } > ./vault.yml
+            } > ./vault_file.yml
 
+            printf '%s\n' \"${ANSIBLE_VAULT_FILE_SECRETS}\" >> vault.yml
+            
             cd group_vars/all
-            ansible-vault encrypt vault.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
+            ansible-vault encrypt vault_file.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
           "
 
       - name: Rsync only changed files to server
