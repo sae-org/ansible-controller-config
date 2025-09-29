@@ -44,7 +44,8 @@ jobs:
           AWS_REGION: us-east-1
         run: |
           ssh -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -i ~/.ssh/controller.pem \
-          "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" "
+          "${{ secrets.EC2_USER }}@${{ secrets.ANSIBLE_HOST }}" \
+          "SECRET_ID='${SECRET_ID}' AWS_REGION='${AWS_REGION}' bash -lc '
             cd ansible
             mkdir -p group_vars/all 
 
@@ -55,7 +56,7 @@ jobs:
 
             cd group_vars/all
             ansible-vault encrypt vault.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
-          "
+          '"
 
       - name: Rsync only changed files to server
         run: |
