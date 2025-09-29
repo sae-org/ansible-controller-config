@@ -50,7 +50,7 @@ jobs:
         with: 
           secrets: |
             ansible/vault_file_secrets
-          parse-json: true
+          parse-json: false
 
       - name: Create a vault file and add secrets from aws and encrypt file 
         env:
