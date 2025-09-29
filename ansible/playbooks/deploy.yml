@@ -7,9 +7,12 @@
     - group_vars/all/vault.yml
 
   tasks:
-    - name: Compute registry and image_ref from vault vars
+    - name: Compute registry from vault vars
       set_fact:
         registry: "{{ aws_account_id }}.dkr.ecr.{{ aws_region }}.amazonaws.com"
+
+    - name: Compute image_ref from vault vars
+      set_fact:
         image_ref: "{{ registry }}/{{ ecr_repo }}:{{ image_tag }}"
 
     - name: Ensure base packages
