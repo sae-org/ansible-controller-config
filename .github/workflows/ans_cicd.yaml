@@ -51,18 +51,10 @@ jobs:
             aws secretsmanager get-secret-value \
               --secret-id "'"$SECRET_ID"'" \
               --region "'"$AWS_REGION"'" \
-              --query SecretString --output text > ./group_vars/all/vault_file
-            
-            REGISTRY=\"${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com\"
-            IMAGE_REF=\"${REGISTRY}/${ECR_REPO}:${IMAGE_TAG}\"
-
-            {
-              echo \"registry: ${REGISTRY}\"
-              echo \"image_ref: ${IMAGE_REF}\"
-            } >> ./group_vars/all/vault_file
+              --query SecretString --output text > ./group_vars/all/vault.yml
 
             cd group_vars/all
-            ansible-vault encrypt vault_file --vault-password-file /home/ubuntu/ansible/secrets_script.sh
+            ansible-vault encrypt vault.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
           "
 
       - name: Rsync only changed files to server
