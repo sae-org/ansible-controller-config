@@ -77,8 +77,8 @@ jobs:
               echo \"image_ref: \${IMAGE_REF}\"
             } > ./vault_file.yml
 
-            printf '%s\n' \"${ANSIBLE_VAULT_FILE_SECRETS}\" >> vault.yml
-            
+            printf '%s\n' \"${ANSIBLE_VAULT_FILE_SECRETS}\" >> vault_file.yml
+
             cd group_vars/all
             ansible-vault encrypt vault_file.yml --vault-password-file /home/ubuntu/ansible/secrets_script.sh
           "
