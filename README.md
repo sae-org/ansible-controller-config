@@ -22,8 +22,8 @@ This repository contains all **Ansible configurations and playbooks** to deploy 
 ---
 
 ## 📂 Structure
-ansible-controller-config/
-├── ansible.cfg
+ansible-controller-config/ /n
+├── ansible.cfg /n
 ├── inventories/
 │ └── aws_ec2.yml
 ├── group_vars/
