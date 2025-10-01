@@ -116,7 +116,7 @@ v
 aws secretsmanager get-secret-value (all Ansible vars) ---> vault.yml (plaintext)
 |
 v
-ansible-vault encrypt vault.yml --vault-password-file=secrets_script.sh
+ansible-vault encrypt vault.yml --vault-password-file secrets_script.sh
 |
 v
 secrets_script.sh ---> calls aws secretsmanager get-secret-value (vault pass only)
