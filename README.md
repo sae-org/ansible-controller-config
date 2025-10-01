@@ -22,6 +22,7 @@ This repository contains all **Ansible configurations and playbooks** to deploy 
 ---
 
 ## 📂 Structure
+```
 ansible-controller-config/ /n
 ├── ansible.cfg /n
 ├── inventories/
@@ -34,3 +35,6 @@ ansible-controller-config/ /n
 └── roles/
 ├── docker/
 └── nginx/
+```
+
+
