@@ -134,12 +134,12 @@ secrets_script.sh ---> calls aws secretsmanager get-secret-value (vault pass onl
 ```
 ansible-controller-config/ 
 ├── .github/workflows
-│ └── ans_cicd.yaml
+  └── ans_cicd.yaml
 ├── ansible
-│ └── inventory
-  │ └── aws_ec2.yml
+  └── inventory
+    └── aws_ec2.yml
 │ └── playbooks
-  │ └── deploy.yml
+    └── deploy.yml
 │ └── ansible.cfg
 │ └── requirements.yml
 │ └── secrets_script.sh
