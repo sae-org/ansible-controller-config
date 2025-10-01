@@ -138,10 +138,10 @@ ansible-controller-config/
 ├── ansible
   └── inventory
     └── aws_ec2.yml
-│ └── playbooks
+  └── playbooks
     └── deploy.yml
-│ └── ansible.cfg
-│ └── requirements.yml
-│ └── secrets_script.sh
+  └── ansible.cfg
+  └── requirements.yml
+  └── secrets_script.sh
 
 ```
